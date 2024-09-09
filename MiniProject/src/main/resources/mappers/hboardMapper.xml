@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.miniproj.mappers.hboardMapper">
+	<select id="getDateTime" resultType="string">
+		select now()
+	</select>
+	
+	<select id="getAllBoard" resultType="com.miniproj.model.HBoardVO">
+		select * from board order by boardNo desc
+	</select>
+	
+	<!--  새로운 게시물 저장하는 쿼리문, working -->
+	<insert id="saveNewBoard">
+	 	insert into board (title, content, writer) values (#{title}, #{content}, #{writer})
+	</insert>
+	
+	<select id="getMaxNo" resultType="int">
+		select max(boardNo) from board
+	</select>
+	
+	<insert id="saveUpFile">
+		insert into boardupfiles(
+			newFileName, 
+		    originFileName, 
+		    thumbFileName,
+		    subdir, 
+		    ext,
+		    size, 
+		    boardNo, 
+		    base64Img
+		    )
+		values (
+		    #{newFileName},
+		    #{originFileName}, 
+		    #{thumbFileName},
+		    #{subdir}
+		    #{ext},
+		    #{size}, 
+		    #{boardNo},
+		    #{base64Img}
+		    )
+	</insert>
+	
+	<select id="getArticleInfo1" resultType="map">
+		select boardNo, title, content, writer
+		from board where boardNo = #{boardNo}
+	</select>
+	
+	<select id="getArticleInfo2" resultType="com.miniproj.model.BoardUpFilesVODTO">
+		select boardUpFileNo, newFileName, originFileName, thumbFileName,
+		ext, size, boardNo, base64Img, subdir from boardupfiles where boardNo = #{boardNo}
+	</select>
+	
+	
+	
+ 	<resultMap type="com.miniproj.model.BoardDetailInfo" id="boardDetailInfoMap">
+		<result column="boardNo" property="boardNo" javaType="int"/>
+		<result column="title" property="title" javaType="String"/>
+		<result column="content" property="content" javaType="String"/>
+		<result column="writer" property="writer" javaType="String"/>
+		<result column="postDate" property="postDate" javaType="java.sql.Timestamp"/>
+		<result column="readCount" property="readCount" javaType="int"/>
+		<result column="ref" property="ref" javaType="int"/>
+		<result column="step" property="step" javaType="int"/>
+		<result column="refOrder" property="refOrder" javaType="int"/>
+	
+		<result column="userName" property="userName" javaType="String"/>
+		<result column="email" property="email" javaType="String"/>
+		
+		<collection property="fileList" ofType="com.miniproj.model.BoardUpFilesVODTO" javaType="java.util.List">
+			<result column="boardUpFileNo"  property="boardUpFileNo" javaType="int" />
+			<result column="newFileName"  property="newFileName" javaType="String" />
+			<result column="originFileName"  property="originFileName" javaType="String" />
+			<result column="thumbFileName"  property="thumbFileName" javaType="String" />
+			<result column="ext"  property="ext" javaType="String" />
+			<result column="size"  property="size" javaType="long" />
+			<result column="boardNo"  property="boardNo" javaType="int" />
+			<result column="base64Img"  property="base64Img" javaType="String" />
+		</collection>
+	</resultMap>
+	
+	<select id="selectBoardDetailInfoByBoardNo" resultMap="boardDetailInfoMap">
+		select h.boardNo, h.title, h.content, h.writer, h.postDate, h.readCount, 
+		h.ref, h.step, h.refOrder, f.*, m.userName, m.email
+		from board h left outer join boardupfiles f
+		on h.boardNo = f.boardNo
+		inner join member m
+		on h.writer = m.userId
+		where h.boardNo = #{boardNo}
+	</select>
+	
+	<insert id="insertBoardReadLog">
+		insert into boardreadlog(readwho, boardNo) values (#{readWho}, #{boardNo})
+	</insert>
+	
+	<select id="selectDateDiff" resultType="int">
+		select ifnull(
+			datediff(
+				now(), 
+				(select readWhen from boardreadlog 
+				where readWho = #{readWho} and boardNo = #{boardNo})
+			), -1)
+	    as datediff
+	</select>
+	
+	<update id="updateReadCount">
+		update board set readCount = readCount + 1 where boardNo = #{boardNo}	
+	</update>
+	
+	<update id="updateReadWhen">
+		update boardreadlog set readWhen = now()
+		where readWho = #{readWho} and boardNo = #{boardNo}
+	</update>
+	
+	<select id="selectBoardreadlog" resultType="map">
+		select * from boardreadlog where boardNo = #{boardNo}
+	</select>
+</mapper>
