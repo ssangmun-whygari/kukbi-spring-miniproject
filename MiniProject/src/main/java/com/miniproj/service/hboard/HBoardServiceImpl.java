@@ -6,11 +6,14 @@ import java.util.Map;
 import javax.inject.Inject;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.miniproj.model.BoardDetailInfo;
 import com.miniproj.model.BoardUpFilesVODTO;
 import com.miniproj.model.HBoardDTO;
+import com.miniproj.model.HBoardReplyDTO;
 import com.miniproj.model.HBoardVO;
 import com.miniproj.model.PointLogDTO;
 import com.miniproj.persistence.HBoardDAO;
@@ -49,6 +52,7 @@ public class HBoardServiceImpl implements HBoardService {
 		return list;
 	}
 
+	// working....
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public boolean saveBoard(HBoardDTO newBoard) throws Exception {
@@ -61,9 +65,20 @@ public class HBoardServiceImpl implements HBoardService {
 		if (bDao.insertNewBoard(newBoard) == 1) { // 게시글 저장 성공함?
 			System.out.println("insertNewBoard 통과");
 			int newBoardNo = bDao.selectMaxBoardNo();
+			bDao.updateBoardRef(newBoardNo); // 답글이 아니라 그냥 게시글에는 ref를 자신으로 지정
+			
 			for (BoardUpFilesVODTO file : newBoard.getFileList()) {
 				file.setBoardNo(newBoardNo);
-				bDao.insertBoardUpFile(file); // 파일 리스트도 보내야지
+				// working...
+				// 첨부파일들의 정보를 관리하는 boardupfiles 테이블에 삽입하는 메소드임
+				// 근데 subdir에 자꾸 NULL이 삽입됨
+				System.out.println("%%%%%%%%%%%%%%%%%%%debug%%%%%%%%%%%%%%%%%%%");
+				System.out.println("file 정보 삽입하는데 왜 subdir에 NULL이 들어감??");
+				System.out.println("file의 정보는 다음과 같다");
+				System.out.println(file);
+				System.out.println("이 시점의 file에는 subdir이 있다.");
+				System.out.println("%%%%%%%%%%%%%%%%%%%debug%%%%%%%%%%%%%%%%%%%");
+				bDao.insertBoardUpFile(file);
 			}
 			// 로그도 써야지
 			if (pDao.insertPointLog(new PointLogDTO(newBoard.getWriter(), "글작성")) == 1) {
@@ -89,6 +104,7 @@ public class HBoardServiceImpl implements HBoardService {
 		List<BoardDetailInfo> boardInfo = bDao.selectBoardDetailInfoByBoardNo(boardNo); 
 		
 		System.out.println("===================================================");
+		System.out.println("boardInfo에 subdir이 제대로 들어가는가? 확인하자");
 		System.out.println(boardInfo);
 		System.out.println("===================================================");
 		
@@ -126,6 +142,36 @@ public class HBoardServiceImpl implements HBoardService {
 				b.setReadCount(b.getReadCount() + 1);
 			}
 		}
+	}
+	
+	// working... jsp에서 replyBoard를 넘겨줘야 함
+	@Override
+	@Transactional(rollbackFor = Exception.class, propagation=Propagation.REQUIRED, isolation = Isolation.DEFAULT)
+	public boolean saveReply(HBoardReplyDTO replyBoard) throws Exception {
+		boolean result = false;
+		System.out.println("답글저장 서비스 호출");
+		// working... replyBoard.getRef()가 계속 0나오는데?
+		// 부모글에 대한 다른 답글이 있으면, 기존 답글의 refOrder를 + 1 씩해줘야 함
+		// 최초 답글이면 기존 답글이 없으니까 아래 코드는 실행되지 않음...
+		bDao.updateRefOrder(replyBoard.getRef(), replyBoard.getRefOrder());
+		// 답글 저장
+		replyBoard.setStep(replyBoard.getStep() + 1);
+		replyBoard.setRefOrder(replyBoard.getRefOrder() + 1);
+		if (bDao.insertReplyBoard(replyBoard) == 1) {
+			result = true;
+		}
+		return result;
+	}
+	
+	@Override
+	public boolean deleteArticle(int boardNo) {
+		boolean result = false;
+		if (bDao.deleteArticle(boardNo) == 1) {
+			
+		}
+		// working... 첨부 파일 삭제 처리 해야 함
+		result = true;
+		return result;
 	}
 
 }

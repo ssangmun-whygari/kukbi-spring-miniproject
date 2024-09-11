@@ -26,6 +26,7 @@ public class HBoardVO {
 	private int step;
 	private int refOrder;
 	private boolean isNew = false;
+	private String isDeleted = "N";
 	
 	private void setIsNew() {
 		// working, 현재 시간과 타임 스탬프 비교

@@ -6,6 +6,7 @@ import java.util.Map;
 import com.miniproj.model.BoardDetailInfo;
 import com.miniproj.model.BoardUpFilesVODTO;
 import com.miniproj.model.HBoardDTO;
+import com.miniproj.model.HBoardReplyDTO;
 import com.miniproj.model.HBoardVO;
 
 public interface HBoardDAO {
@@ -30,4 +31,12 @@ public interface HBoardDAO {
 	int updateReadwhen(String ipAddr, int boardNo) throws Exception;
 
 	Map<String, Object> selectBoardreadlog(int boardNo);
+
+	void updateBoardRef(int newBoardNo);
+	
+	void updateRefOrder(int ref, int refOrder) throws Exception;
+	
+	int insertReplyBoard(HBoardReplyDTO replayBoard);
+
+	int deleteArticle(int boardNo);
 }

@@ -90,18 +90,28 @@ function goToArticle(boardNo) {
 			<th scope="col">조회수</th>
 		</tr></thead>
 		<tbody><c:forEach var="article" items="${boardList}">
-			<tr onclick="goToArticle(${article.getBoardNo()})">
+
+			<c:if test="${article.getIsDeleted() eq 'N'}">
+			<tr onclick="goToArticle(${article.getBoardNo()})">		
  				<td>
  					<c:if test=""> <!--  -->
  						<span class="newMark"><img src="/resources/images/icons8-new-64.png" width="32" height="32"/></span>
  					</c:if>
  					${article.getBoardNo()}
  				</td>
-				<td>${article.getTitle()}</td>
+				<td>
+					<c:if test="${article.step > 0 }">
+						<img 
+							src='/resources/images/rightArrow.png'
+							style="margin-left: calc(20px * ${article.step})"/>
+					</c:if>
+					${article.getTitle()}
+				</td>
 				<td>${article.getWriter()}</td>
 				<td class="postDate">${article.getPostDate()}</td>
 				<td>${article.getReadCount()}</td>
 			</tr>
+			</c:if>
 		</c:forEach>
 		</tbody></table>
 		<div>

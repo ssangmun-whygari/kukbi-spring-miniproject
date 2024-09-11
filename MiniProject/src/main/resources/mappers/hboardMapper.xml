@@ -8,7 +8,7 @@
 	</select>
 	
 	<select id="getAllBoard" resultType="com.miniproj.model.HBoardVO">
-		select * from board order by boardNo desc
+		select * from board order by ref desc, refOrder asc
 	</select>
 	
 	<!--  새로운 게시물 저장하는 쿼리문, working -->
@@ -35,7 +35,7 @@
 		    #{newFileName},
 		    #{originFileName}, 
 		    #{thumbFileName},
-		    #{subdir}
+		    #{subdir},
 		    #{ext},
 		    #{size}, 
 		    #{boardNo},
@@ -78,6 +78,7 @@
 			<result column="size"  property="size" javaType="long" />
 			<result column="boardNo"  property="boardNo" javaType="int" />
 			<result column="base64Img"  property="base64Img" javaType="String" />
+			<result column="subdir" property="subdir" javaType="String" />
 		</collection>
 	</resultMap>
 	
@@ -117,4 +118,26 @@
 	<select id="selectBoardreadlog" resultType="map">
 		select * from boardreadlog where boardNo = #{boardNo}
 	</select>
+	
+	<update id="updateBoardRef">
+		update board set ref = #{boardNo}
+		where boardNo = #{boardNo}
+	</update>
+	
+	<!-- ref하고 refOrder 속성이 있어야 하는데... -->
+	<update id="updateBoardRefOrder">
+		update board set refOrder = refOrder + 1
+		where ref = #{ref} and refOrder > #{refOrder}
+	</update>
+	
+	<!-- 답글 입력데이터와 함께 ref, step, refOrder 값 저장 -->
+	<insert id="insertReplyBoard">
+		insert into board(title, content, writer, ref, step, refOrder)
+		values (#{title}, #{content}, #{writer}, #{ref}, #{step}, #{refOrder})
+	</insert>
+	
+	<update id="markArticleToDeleted">
+		update board set isDeleted = 'Y' where boardNo = #{boardNo}; 
+	</update>
+	
 </mapper>

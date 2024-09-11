@@ -88,6 +88,10 @@ public class FileProcess {
 					.build();
 			}
 		}
+		System.out.println("%%%%%%%%%%%%%%%%%%%%%%debug%%%%%%%%%%%%%%%%%%%%%%");
+		System.out.println("ymd[2] : " + ymd[2]);
+		System.out.println("subdir : " + result.getSubdir());
+		System.out.println("%%%%%%%%%%%%%%%%%%%%%%debug%%%%%%%%%%%%%%%%%%%%%%");
 		return result;
 	}
 

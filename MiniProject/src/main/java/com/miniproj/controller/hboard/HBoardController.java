@@ -25,6 +25,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.miniproj.model.BoardDetailInfo;
 import com.miniproj.model.BoardUpFilesVODTO;
 import com.miniproj.model.HBoardDTO;
+import com.miniproj.model.HBoardReplyDTO;
 import com.miniproj.model.HBoardVO;
 import com.miniproj.model.MyResponseWithoutData;
 import com.miniproj.service.hboard.HBoardService;
@@ -312,6 +313,7 @@ public class HBoardController {
 		}
 		
 		// 조회수 기능 구현을 위한 코드 (ip 주소, 24시간 등...)
+		// working... 왜 List로 넘겨주지? 하나밖에 없는데
 		List<BoardDetailInfo> boardDetailInfo = null;
 		
 		String ipAddr = GetClientIPAddr.getClientIp(request);
@@ -322,4 +324,68 @@ public class HBoardController {
 		
 		model.addAttribute("boardDetailInfo", boardDetailInfo);
 	}
+	
+	@RequestMapping("/showReplyForm")
+	public String showReplyForm() {
+		System.out.println("showReplyForm GET요청");
+		return "/hboard/replyForm";
+	}
+	
+
+	@RequestMapping(value="/saveReply", method=RequestMethod.POST)
+	// rttr 맨날 까먹네...
+	// jsp의 form 태그에서 name 속성 지정해서 보내면 HBoardReplyDTO 타입 객체를 자동으로 만들어줌
+	public String saveReplyBoard(HBoardReplyDTO replyBoard, RedirectAttributes rttr) {
+		System.out.println(replyBoard + "답글 저장하자~");
+		
+		String returnPage = "redirect:/hboard/listAll";
+		try {
+			if (service.saveReply(replyBoard)) {
+				rttr.addAttribute("status", "success");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			rttr.addAttribute("status", "fail");
+		}
+		return returnPage;
+	}
+	
+	@RequestMapping(value="/removeBoard")
+	public String removeArticleFromBoard(
+		@RequestParam("boardNo") int boardNo,
+		HttpServletRequest request,
+		RedirectAttributes rttr
+	) throws Exception {
+		System.out.println(boardNo + "번 글을 삭제해야지...");
+		String ipAddr = GetClientIPAddr.getClientIp(request);
+		String serverPath = request.getSession().getServletContext().getRealPath("/resources/boardUpFiles");
+		
+		// 첨부파일 삭제
+		List<BoardDetailInfo> boardDetailInfo = service.readArticle(boardNo, ipAddr);
+		for (BoardDetailInfo info : boardDetailInfo) {
+			List<BoardUpFilesVODTO> files = info.getFileList();
+			for (BoardUpFilesVODTO file : files) {
+				if (file.getThumbFileName() != null) {
+					String filePath = serverPath + file.getSubdir() 
+							+ File.separator
+							+ file.getThumbFileName();
+					System.out.println("파일 주소 : " + filePath);
+					fileProcess.removeFile(filePath);
+				}
+				String filePath = serverPath + file.getSubdir()
+					+ File.separator + file.getNewFileName();
+				System.out.println("파일 주소 : " + filePath);
+				fileProcess.removeFile(filePath);
+			}
+		}
+		
+		
+		if (service.deleteArticle(boardNo)) {
+			System.out.println("글 삭제 완료, 글 목록 페이지로 이동합니다...");
+			rttr.addAttribute("status", "removeSuccess");
+		}
+		return "redirect:/hboard/listAll";
+	}
+
+	
 }

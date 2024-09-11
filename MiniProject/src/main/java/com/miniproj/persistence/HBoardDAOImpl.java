@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 import com.miniproj.model.BoardDetailInfo;
 import com.miniproj.model.BoardUpFilesVODTO;
 import com.miniproj.model.HBoardDTO;
+import com.miniproj.model.HBoardReplyDTO;
 import com.miniproj.model.HBoardVO;
 
 import lombok.extern.slf4j.Slf4j;
@@ -103,5 +104,32 @@ public class HBoardDAOImpl implements HBoardDAO {
 	@Override
 	public Map<String, Object> selectBoardreadlog(int boardNo) {
 		return ses.selectOne(ns + "selectBoardreadlog", boardNo);
+	}
+
+	// working...
+	@Override
+	public void updateBoardRef(int newBoardNo) {
+		ses.update(ns + "updateBoardRef", newBoardNo);
+	}
+
+	@Override
+	public void updateRefOrder(int ref, int refOrder) throws Exception {
+		// map으로 myBatis가 받네....
+		Map<String, Object> params = new HashMap<>();
+		params.put("refOrder", refOrder);
+		params.put("ref", ref);
+		
+		ses.update(ns + "updateBoardRefOrder", params);
+	}
+
+	@Override
+	public int insertReplyBoard(HBoardReplyDTO replyBoard) {
+		// TODO Auto-generated method stub
+		return ses.insert(ns + "insertReplyBoard", replyBoard);
+	}
+
+	@Override
+	public int deleteArticle(int boardNo) {
+		return ses.update(ns + "markArticleToDeleted", boardNo);
 	}
 }
