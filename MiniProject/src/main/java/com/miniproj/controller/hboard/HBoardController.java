@@ -3,6 +3,7 @@ package com.miniproj.controller.hboard;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.miniproj.model.BoardDetailInfo;
+import com.miniproj.model.BoardUpFileStatus;
 import com.miniproj.model.BoardUpFilesVODTO;
 import com.miniproj.model.HBoardDTO;
 import com.miniproj.model.HBoardReplyDTO;
@@ -49,6 +51,9 @@ public class HBoardController {
 	
 	// 유저가 업로드한 파일을 임시 보관하는 객체(컬렉션)
 	private List<BoardUpFilesVODTO> uploadFileList = new ArrayList<>();
+	// private List<BoardUpFilesVODTO> modifyFileList = new ArrayList<>(); // 수정요청시 유저가 업로드한 파일을 저장
+	private List<BoardUpFilesVODTO> modifyFileList = new ArrayList<>();
+	
 	
 	@Inject
 	private HBoardService service;
@@ -297,21 +302,40 @@ public class HBoardController {
 //		}
 //	}
 	
-	@GetMapping("/viewBoard") //void면 viewBoard.jsp로 간다네
-	public void viewBoard(@RequestParam(value="boardNo", defaultValue = "-1") int boardNo, Model model, HttpServletRequest request) throws Exception {
-		logger.info(boardNo + "번 글을 조회하자...");
+	// 게시글 수정도 게시글 보는 거랑 비슷하니까
+	// =====================================================================
+	// NOTE
+	// GetMapping에 주소 두개 보내면 GET 요청이 2번 실행되는 것 같음
+	// 하나는 boardNo 쿼리로 붙여주는데 다른 한 요청은 title, content 등 엉뚱한 걸 붙여줌...
+	// 왜 그러는 지 모르겠음... 일단 분리시켜보겠다
+	// ** 해결됨 : return문에서 redirect를 걸어주기 때문에 다시 순환하여
+	// GET 요청을 함. 그래서 두번 요청이 된거임. 그냥 "viewBoard" String을 
+	// 반환해야 viewBoard.jsp를 찾아서 렌더링해줌
+	// =====================================================================
+	@GetMapping({"/viewBoard", "/modifyBoard"})
+	public String viewBoard(@RequestParam(value="boardNo", defaultValue = "-1") int boardNo, Model model, HttpServletRequest request) {	
 		// viewBoard.jsp에 상세글 + 업로드 파일 정보 출력
-		HBoardDTO article = service.getArticle(boardNo);
-		System.out.println(article);
-		if (article != null) {
-			model.addAttribute("title", article.getTitle());
-			model.addAttribute("writer", article.getWriter());
-			model.addAttribute("content", article.getContent());
-			model.addAttribute("attachedFiles", article.getFileList());
-			// 서버에 이미지도 요청할 수 있나?
-			String serverPath = request.getSession().getServletContext().getRealPath("/resources/boardUpFiles");
+		HBoardDTO article;
+		try {
+			System.out.println("&&&&&&&&&&&&&&&&&&boardNo :" + boardNo);
+			System.out.println("Request URI: " + request.getRequestURI());
+			System.out.println("Query String: " + request.getQueryString());
+			article = service.getArticle(boardNo);
+			System.out.println(article);
+			if (article != null) {
+				model.addAttribute("title", article.getTitle());
+				model.addAttribute("writer", article.getWriter());
+				model.addAttribute("content", article.getContent());
+				model.addAttribute("attachedFiles", article.getFileList());
+				// 서버에 이미지도 요청할 수 있나?
+				String serverPath = request.getSession().getServletContext().getRealPath("/resources/boardUpFiles");
+			}
+		} catch (Exception e1) {
+			// working... boardNo가 -1로 넘어가는 문제 있음.
+			e1.printStackTrace();
+			return "redirect:/hboard/listAll";
 		}
-		
+
 		// 조회수 기능 구현을 위한 코드 (ip 주소, 24시간 등...)
 		// working... 왜 List로 넘겨주지? 하나밖에 없는데
 		List<BoardDetailInfo> boardDetailInfo = null;
@@ -319,18 +343,49 @@ public class HBoardController {
 		String ipAddr = GetClientIPAddr.getClientIp(request);
 		logger.info(ipAddr + "에서" + boardNo + "번 글을 조회한다.");
 		
-
-		boardDetailInfo = service.readArticle(boardNo, ipAddr);
 		
-		model.addAttribute("boardDetailInfo", boardDetailInfo);
+		// /viewBoard, /modifyBoard 중 어느 곳에서 넘어왔는 지 판단하는 로직
+		if (request.getRequestURI().equals("/hboard/viewBoard")) {
+			System.out.println("게시글 상세보기 호출");
+			try {
+				boardDetailInfo = service.readArticle(boardNo, ipAddr);
+			} catch (Exception e) {
+				e.printStackTrace();
+				return "redirect:/hboard/listAll";
+			}
+			model.addAttribute("boardDetailInfo", boardDetailInfo);
+			return "hboard/viewBoard";
+		} else if (request.getRequestURI().equals("/hboard/modifyBoard")) {
+			System.out.println("게시글 수정 호출");
+			try {
+				boardDetailInfo = service.readArticle(boardNo, ipAddr);
+			} catch (Exception e) {
+				e.printStackTrace();
+				return "redirect:/hboard/listAll";
+			}
+			model.addAttribute("boardDetailInfo", boardDetailInfo);
+			return "hboard/modifyBoard";
+		}
+		return null;
 	}
+	
+//	@GetMapping("/modifyBoard")
+//	public String showModifyBoard(
+//			@RequestParam(
+//				value="boardNo", 
+//				defaultValue = "-1"
+//			) int boardNo, 
+//			Model model, 
+//			HttpServletRequest request) {
+//		
+//		return null;
+//	}
 	
 	@RequestMapping("/showReplyForm")
 	public String showReplyForm() {
 		System.out.println("showReplyForm GET요청");
 		return "/hboard/replyForm";
 	}
-	
 
 	@RequestMapping(value="/saveReply", method=RequestMethod.POST)
 	// rttr 맨날 까먹네...
@@ -387,5 +442,61 @@ public class HBoardController {
 		return "redirect:/hboard/listAll";
 	}
 
+	// 게시글 수정 처리
+	@RequestMapping(value="modifyRemoveFileCheck", method = RequestMethod.POST)
+	public ResponseEntity<MyResponseWithoutData> modifyRemoveFileCheck(@RequestParam("removeFileNo") int removeFilePK) {
+		System.out.println(removeFilePK + "번 파일 삭제 요청됨");
+		System.out.println(this.modifyFileList);
+		// working...
+		try {
+			BoardUpFilesVODTO file = service.getUploadedFileInfo(removeFilePK);
+			System.out.println("======================================");
+			System.out.println("파일 제대로 들어오는 거 맞어?");
+			System.out.println(file);
+			System.out.println("======================================");
+			file.setFileStatus(BoardUpFileStatus.DELETE);
+			this.modifyFileList.add(file);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		System.out.println("===========================================");
+		System.out.println("현재 파일리스트에 있는 파일들 (수정시)");
+		System.out.println(this.modifyFileList);
+		System.out.println("===========================================");
+		
+		return new ResponseEntity<MyResponseWithoutData> (
+				new MyResponseWithoutData(
+						200,
+						null,
+						null, 
+						null, 
+						"success"), HttpStatus.OK);
+	}
 	
+	@RequestMapping(value="/cancelRemFiles", method = RequestMethod.POST)
+	public ResponseEntity<MyResponseWithoutData> cancelRemFiles() {
+		System.out.println("파일리스트의 모든 파일삭제를 취소하고 싶다...");
+		for (BoardUpFilesVODTO file : this.modifyFileList) {
+			file.setFileStatus(null);
+		}
+		
+		// outputModifyFIleList(); <- 파일 목록을 출력해주는 함수
+		return new ResponseEntity<MyResponseWithoutData>(
+				new MyResponseWithoutData(0, null, null, null, "success"),
+				HttpStatus.OK
+			);
+	}
+	
+	@RequestMapping(value = "/modifyBoardSave", method = RequestMethod.POST)
+	public void modifyBoardSave(HBoardDTO modifyBoard,
+			@RequestParam("modifyNewFile") MultipartFile[] modifyNewFile) {
+		System.out.println(modifyBoard.toString() + "를 수정하자...");
+		
+		for (int i = 0; i < modifyNewFile.length; i++) {
+			System.out.println(
+				"새로 업로드된 파일 : " + modifyNewFile[i].getOriginalFilename()
+			);
+		}
+	}
 }

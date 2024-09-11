@@ -91,9 +91,25 @@
 	            	onclick="location.href='/hboard/showReplyForm?ref=${article.getRef()}&step=${article.getStep()}&refOrder=${article.getRefOrder()}'">
 	            	답글달기
 	            </button>
-				<button type="button" class="btn btn-primary" onclick="validateBoard()">저장</button>
-				<button type="button" class="btn btn-secondary" onclick="cancelBoard()">삭제</button>
-				<button type="button" class="btn btn-warning" onclick="location.href='/hboard/listAll'">목록보기</button>
+	            <!-- working... 잘 작동되나 확인 필요 -->
+				<button 
+					type="button" 
+					class="btn btn-primary" 
+					onclick="location.href='/hboard/modifyBoard?boardNo=${article.getBoardNo()}'">
+					수정
+				</button>
+				<button 
+					type="button" 
+					class="btn btn-secondary" 
+					onclick="cancelBoard()">
+					삭제
+				</button>
+				<button 
+					type="button" 
+					class="btn btn-warning" 
+					onclick="location.href='/hboard/listAll'">
+					목록보기
+				</button>
 				
 			</div>
 		</c:forEach>

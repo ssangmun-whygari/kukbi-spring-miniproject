@@ -1,5 +1,6 @@
 package com.miniproj.service.hboard;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -134,6 +135,13 @@ public class HBoardServiceImpl implements HBoardService {
 		return boardInfo;
 	}
 	
+	// 조회수 처리 안해도 되니까 ip주소도 안념겨받음
+	@Override
+	public List<BoardDetailInfo> readArticle(int boardNo) throws Exception {
+		return null;
+		
+	}
+	
 	private void updateReadCount(int boardNo, List<BoardDetailInfo> boardInfo) throws Exception {
 		if (bDao.updateReadCount(boardNo) == 1) {
 			// BoardDetailInfo 객체에도 readCount 속성 있으니까 그것도 업데이트해줘야 함
@@ -171,6 +179,13 @@ public class HBoardServiceImpl implements HBoardService {
 		}
 		// working... 첨부 파일 삭제 처리 해야 함
 		result = true;
+		return result;
+	}
+
+	@Override
+	public BoardUpFilesVODTO getUploadedFileInfo(int boardUpFileNo) throws Exception {
+		BoardUpFilesVODTO result = null; 
+		result = bDao.selectUploadedFileInfo(boardUpFileNo);
 		return result;
 	}
 

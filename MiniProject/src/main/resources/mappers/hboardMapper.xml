@@ -137,7 +137,10 @@
 	</insert>
 	
 	<update id="markArticleToDeleted">
-		update board set isDeleted = 'Y' where boardNo = #{boardNo}; 
+		update board set isDeleted = 'Y' where boardNo = #{boardNo}
 	</update>
 	
+	<select id="selectUploadedFilesInfo" resultType="com.miniproj.model.BoardUpFilesVODTO">
+		select * from boardupfiles where boardUpFileNo = #{boardUpFileNo}
+	</select>
 </mapper>

@@ -39,4 +39,6 @@ public interface HBoardDAO {
 	int insertReplyBoard(HBoardReplyDTO replayBoard);
 
 	int deleteArticle(int boardNo);
+
+	BoardUpFilesVODTO selectUploadedFileInfo(int boardUpFileNo);
 }

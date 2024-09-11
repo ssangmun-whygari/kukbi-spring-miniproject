@@ -14,7 +14,7 @@
 	$(function() {
 		showModal();
 		
-		$(".modalCloseBtn").on()
+		// $(".modalCloseBtn").on()
 		
 /* 		$(".modalCloseBtn").click((function() {
 			$("#myModal").hide();
@@ -44,8 +44,9 @@
 		}	
 	}
 		
-	function highlightNewArtcle() {		
-		console.log('${boardList}')
+	function highlightNewArtcle() {
+		// 이 코드가 자꾸 문제 일으킴
+		/*console.log('${boardList}')*/
 		$(".newMark").html("????");
 	}
 	
@@ -72,8 +73,79 @@
 
 <script>
 function goToArticle(boardNo) {
+	console.log("--------------------------------------------")
+	console.log(boardNo);
+	console.log(`게시글번호 \${boardNo}가 잘 전달되나???`)
+	console.log("--------------------------------------------")
 	location.href = `/hboard/viewBoard?boardNo=\${boardNo}`
 }
+</script>
+
+<script>
+	function removeFileCheckBox(fileId) {
+		// 체크박스를 클릭할 때 호출되는 함수
+		console.log(fileId)
+		let checkCount = countCheckBoxChecked()
+		if (checkCount > 0) {
+			$(".removeUpFileBtn").removeAttr("disabled")
+			$(".removeUpFileBtn").val(checkCount + " 개 파일을 삭제합니다.")
+		} else if (checkCount == 0) {
+			$(".removeUpFileBtn").attr("disabled", true)
+			$(".removeUpFileBtn").attr("선택된 파일이 없습니다")
+		}
+	}
+	
+	function countCheckBoxChecked() {
+		// 체크된 체크박스 갯수
+		let result = 0
+		$(".fileCheck").each(function (i, item) {
+			console.log($(item).is(":checked"))
+			if ($(item).is(":checked")) {
+				result++;
+			}
+		})
+		console.log(result + "개가 체크됨")
+		return result
+	}
+	
+	function removeFile() {
+		// 비활성화해놓은 [선택된파일삭제] 버튼 클릭시 호출
+		let removeFileArray = []
+		
+		$(".fileCheck").each(function(i, item) {
+			if ($(item).is(":checked")) { // 파일 삭제하려고 체크박스를 체크했다면
+				let tmp = $(item).attr("id") // 선택된 파일의 id값을 얻어옴 (pk)
+				removeFileArray.push(tmp)
+			}
+		})
+		
+		console.log("삭제될 파일 : " + removeFileArray);
+		
+		$.each(removeFileArray, function(i, item) {
+			$.ajax({
+				url: "/hboard/modifyRemoveFileCheck",
+				type: "POST",
+				dataType: "json",
+				data: {
+					"removeFileNo" : item
+				},
+				async: false,
+				success: function (data) {
+					console.log(data)
+					if (data.msg == "success") {
+						// 투명도 0.2로 바꾸기
+					}
+				},
+				error: function() {
+															
+				},
+				complete: function() {
+					
+				}
+			})
+		})
+		
+	}
 </script>
 
 <jsp:include page="../header.jsp"></jsp:include>

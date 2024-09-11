@@ -132,4 +132,10 @@ public class HBoardDAOImpl implements HBoardDAO {
 	public int deleteArticle(int boardNo) {
 		return ses.update(ns + "markArticleToDeleted", boardNo);
 	}
+
+	@Override
+	public BoardUpFilesVODTO selectUploadedFileInfo(int boardUpFileNo) {
+		return ses.selectOne(ns + "selectUploadedFilesInfo", boardUpFileNo);
+	}
+
 }
