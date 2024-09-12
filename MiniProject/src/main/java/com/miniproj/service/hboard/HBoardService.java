@@ -1,12 +1,14 @@
 package com.miniproj.service.hboard;
 
 import java.util.List;
+import java.util.Map;
 
 import com.miniproj.model.BoardDetailInfo;
 import com.miniproj.model.BoardUpFilesVODTO;
 import com.miniproj.model.HBoardDTO;
 import com.miniproj.model.HBoardReplyDTO;
 import com.miniproj.model.HBoardVO;
+import com.miniproj.model.PagingInfoDTO;
 
 public interface HBoardService {
 	
@@ -26,4 +28,9 @@ public interface HBoardService {
 	List<BoardDetailInfo> readArticle(int boardNo) throws Exception;
 	
 	BoardUpFilesVODTO getUploadedFileInfo(int boardUpFileNo) throws Exception;
+
+	boolean modifyBoard(HBoardDTO modifyBoard);
+
+	//게시글 조회 -- 페이징
+	Map<String, Object> getAllBoard(PagingInfoDTO dto);
 }

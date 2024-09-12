@@ -1,7 +1,5 @@
 package com.miniproj.model;
 
-import java.util.List;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,16 +10,10 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Setter
 @Getter
+@Setter
 @ToString
-
-public class HBoardDTO {
-	private int boardNo;
-	private String title;
-	private String content;
-	private String writer;
-	
-	
-	private List<BoardUpFilesVODTO> fileList;
+public class PagingInfoDTO {
+	private int pageNo;
+	private int pagingSize; // 1페이지에 보여줄 글의 갯수
 }

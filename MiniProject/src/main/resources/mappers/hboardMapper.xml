@@ -8,7 +8,8 @@
 	</select>
 	
 	<select id="getAllBoard" resultType="com.miniproj.model.HBoardVO">
-		select * from board order by ref desc, refOrder asc
+		<!-- select * from board order by ref desc, refOrder asc -->
+		select * from board order by ref desc, refOrder asc limit #{startRowIndex}, #{viewPostCntPerPage}
 	</select>
 	
 	<!--  새로운 게시물 저장하는 쿼리문, working -->
@@ -142,5 +143,21 @@
 	
 	<select id="selectUploadedFilesInfo" resultType="com.miniproj.model.BoardUpFilesVODTO">
 		select * from boardupfiles where boardUpFileNo = #{boardUpFileNo}
+	</select>
+	
+	
+	<update id="updateBoardByBoardNo">
+		update board set title = #{title}, content = #{content}
+		where boardNo = #{boardNo}
+	</update>
+	
+	<delete id="deleteBoardUpFileByPK">
+		delete from boardupfiles
+		where boardUpFildNo = #{boardUpFileNo}
+	</delete>
+	
+	<!-- select 문에는 resultType 줘야 함 -->
+	<select id="selectTotalCount" resultType="int">
+		select count(*) from board
 	</select>
 </mapper>

@@ -1,6 +1,6 @@
 package com.miniproj.service.hboard;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -12,10 +12,13 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.miniproj.model.BoardDetailInfo;
+import com.miniproj.model.BoardUpFileStatus;
 import com.miniproj.model.BoardUpFilesVODTO;
 import com.miniproj.model.HBoardDTO;
 import com.miniproj.model.HBoardReplyDTO;
 import com.miniproj.model.HBoardVO;
+import com.miniproj.model.PagingInfo;
+import com.miniproj.model.PagingInfoDTO;
 import com.miniproj.model.PointLogDTO;
 import com.miniproj.persistence.HBoardDAO;
 import com.miniproj.persistence.MemberDAO;
@@ -187,6 +190,73 @@ public class HBoardServiceImpl implements HBoardService {
 		BoardUpFilesVODTO result = null; 
 		result = bDao.selectUploadedFileInfo(boardUpFileNo);
 		return result;
+	}
+
+	// 게시글 수정 처리
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.DEFAULT, rollbackFor = Exception.class)
+	public boolean modifyBoard(HBoardDTO modifyBoard) {
+		boolean result = false;
+		System.out.println(modifyBoard);
+		System.out.println(modifyBoard.getFileList().size() + "개의 파일");
+		
+		// 1) 순수게시글 update
+		if (bDao.updateBoardByBoardNo(modifyBoard) == 1) {
+			// 2) 업로드파일의 fileStatus
+			List<BoardUpFilesVODTO> fileList = modifyBoard.getFileList();
+			for (BoardUpFilesVODTO file : fileList) {
+//				if (file.getFileStatus() == BoardUpFileStatus.INSERT) {
+//					file.setBoardNo(modifyBoard.getBoardNo());
+//					bDao.insertBoardUpFile(file);
+//				} else if (file.getFileStatus() == BoardUpFileStatus.DELETE) {
+//					bDao.deleteBoardUpFile(file.getBoardUpFileNo());
+//				}
+				if (file.getFileStatus() == BoardUpFileStatus.DELETE) {
+					bDao.deleteBoardUpFile(file.getBoardUpFileNo());
+				}
+			}
+			result = true;
+		}
+		
+		return result;
+	}
+
+	@Override
+	public Map<String, Object> getAllBoard(PagingInfoDTO dto) {
+		PagingInfo pi = makePagingInfo(dto);
+		
+		List<HBoardVO> list = bDao.selectAllBoard(pi);
+		
+		for (HBoardVO hBoardVO : list) {
+			System.out.println(hBoardVO);
+		}
+		
+		Map<String, Object> resultMap = new HashMap<>();
+		resultMap.put("pagingInfo", pi);
+		resultMap.put("boardList", list);
+		
+		return resultMap;
+	}
+	
+	private PagingInfo makePagingInfo(PagingInfoDTO dto) {
+		PagingInfo pi = new PagingInfo(dto);
+		
+		// setter 호출
+		// working... 계산식 수정 필요
+		pi.setTotalPostCnt(bDao.getTotalPostCnt()); // 이럼 totalPostCnt가 설정됨
+		System.out.println("총 글의 갯수 : " + pi.getTotalPostCnt());
+		
+		pi.setTotalPageCnt(); // totalPostCnt와 viewPostCntPerPage로 계산함
+		pi.setStartRowIndex(); // pageNo와 viewPostCntPerPage로 설정함
+		
+		// 페이징 블럭
+		pi.setPageBlockNoCurPage();
+		pi.setStartPageNoCurBlock();
+		pi.setEndPageNoCurBlock();
+		
+		System.out.println("pagingInfo : " + pi.toString());
+		
+		return pi;
 	}
 
 }

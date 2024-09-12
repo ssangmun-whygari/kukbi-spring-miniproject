@@ -172,7 +172,7 @@
 		<c:forEach var="article" items="${boardDetailInfo}">
 		
 		
-			<form action="" method="POST">
+			<form action="" method="POST" enctype="multipart/form-data>
 				<div class="input-group mb-3">
 				  <span class="input-group-text" id="title">제목</span>
 				  <input type="text" 
@@ -194,7 +194,6 @@
 					<textarea class="form-control" rows="5" id="comment" name="content"
 					>${content }</textarea>
 				</div>
-			</form>
 			<!--  업로드 ㅍ일 영역 -->
 			<div class="attachedFiles">
 			
@@ -264,6 +263,7 @@
 					<button type="button" class="btn btn-secondary" onclick="cancelRemoveFiles()">파일 삭제 취소</button>
 				</div>
 			</div>
+			</form> <!-- title, content 뿐만 아니라 파일도 업로드해야함 -->
 			
 			
 			

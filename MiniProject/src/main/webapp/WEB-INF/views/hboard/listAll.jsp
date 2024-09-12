@@ -13,6 +13,7 @@
 <script>
 	$(function() {
 		showModal();
+		setViewUnit();
 		
 		// $(".modalCloseBtn").on()
 		
@@ -21,7 +22,18 @@
 		}) */
 		highlightNewArtcle();
 		timediffPostDate();
+		
+		$("#viewUnitControl").on("change", function() {
+			location.href="/hboard/listAll/?pagingSize=" + $(this).val()
+		})
 	})
+	
+	// working...
+	function setViewUnit() {
+		$("#viewUnitControl")
+			.find(`option[value='${pagingInfo.getViewPostCntPerPage()}']`)
+			.prop("selected", true)
+	}
 		
  	function showModal() {
 		let status = '${param.status}'; // url 주소창에서 status 쿼리스트링의 값을 가져와 변수 저장
@@ -152,6 +164,16 @@ function goToArticle(boardNo) {
 	<div class="container">
 		<h1>계층형 게시판 전체 목록</h1>
 		<div>${boardList}</div>
+		
+		<div>
+			<select id="viewUnitControl">
+				<option value="10">10개씩 보기</option>
+				<option value="20">20개씩 보기</option>
+				<option value="30">30개씩 보기</option>
+				<option value="40">40개씩 보기</option>
+			</select>
+		</div>
+		
 		<h2>테이블이라네</h2>
 		<table class="table table-hover"><thead>
 		<tr>
@@ -191,6 +213,39 @@ function goToArticle(boardNo) {
 		</div>
 		
 	</div>
+	
+	<div>${pagingInfo }</div>
+	<div>${pagingInfo.getStartPageNoCurBlock() }</div>
+	<div>${pagingInfo.getEndPageNoCurBlock() }</div>
+	<div>
+		<ul class="pagination">
+		<c:if test="${pagingInfo.getStartPageNoCurBlock() != 1}">
+		  <li class="page-item"><a class="page-link" 
+		  	href="/hboard/listAll?pageNo=${pagingInfo.getStartPageNoCurBlock()-1}"
+		  >이전</a></li>
+		</c:if>
+ 		  <c:forEach
+ 		  	begin="${pagingInfo.getStartPageNoCurBlock()}"
+ 		  	end="${pagingInfo.getEndPageNoCurBlock()}"
+ 		  	step="1"
+ 		  	varStatus="status"  		  	
+ 		  >
+		  	<li class="page-item 
+		  		<c:if test="${pagingInfo.pageNo eq status.index}">
+		  			active
+		  		</c:if>
+		  	"><a class="page-link" 
+		  		href="/hboard/listAll?pageNo=${status.index}"
+		  	>${status.index }</a></li>
+		  </c:forEach>
+		<c:if test="${pagingInfo.getEndPageNoCurBlock() != pagingInfo.getTotalPageCnt()}">
+		  <li class="page-item"><a class="page-link" 
+		  	href="/hboard/listAll?pageNo=${pagingInfo.getEndPageNoCurBlock()+1}"
+		  >다음</a></li>
+		</c:if>
+		</ul>
+	</div>
+	
 	
 	<!-- 모달 추가 -->
 	<div class="modal" id="myModal">

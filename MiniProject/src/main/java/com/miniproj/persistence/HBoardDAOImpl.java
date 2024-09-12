@@ -14,6 +14,7 @@ import com.miniproj.model.BoardUpFilesVODTO;
 import com.miniproj.model.HBoardDTO;
 import com.miniproj.model.HBoardReplyDTO;
 import com.miniproj.model.HBoardVO;
+import com.miniproj.model.PagingInfo;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -136,6 +137,27 @@ public class HBoardDAOImpl implements HBoardDAO {
 	@Override
 	public BoardUpFilesVODTO selectUploadedFileInfo(int boardUpFileNo) {
 		return ses.selectOne(ns + "selectUploadedFilesInfo", boardUpFileNo);
+	}
+
+	@Override
+	public int updateBoardByBoardNo(HBoardDTO modifyBoard) {
+		return ses.update(ns + "updateBoardByBoardNo", modifyBoard);
+	}
+
+	@Override
+	public void deleteBoardUpFile(int boardUpFileNo) {
+		ses.delete(ns + "deleteBoardUpFileModify", boardUpFileNo);
+	}
+
+	@Override
+	public int getTotalPostCnt() {
+		// TODO Auto-generated method stub
+		return ses.selectOne(ns + "selectTotalCount");
+	}
+
+	@Override
+	public List<HBoardVO> selectAllBoard(PagingInfo pi) {
+		return ses.selectList(ns + "getAllBoard", pi);
 	}
 
 }

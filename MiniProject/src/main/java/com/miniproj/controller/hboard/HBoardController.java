@@ -3,8 +3,8 @@ package com.miniproj.controller.hboard;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -30,6 +30,7 @@ import com.miniproj.model.HBoardDTO;
 import com.miniproj.model.HBoardReplyDTO;
 import com.miniproj.model.HBoardVO;
 import com.miniproj.model.MyResponseWithoutData;
+import com.miniproj.model.PagingInfoDTO;
 import com.miniproj.service.hboard.HBoardService;
 import com.miniproj.util.FileProcess;
 import com.miniproj.util.GetClientIPAddr;
@@ -51,7 +52,6 @@ public class HBoardController {
 	
 	// 유저가 업로드한 파일을 임시 보관하는 객체(컬렉션)
 	private List<BoardUpFilesVODTO> uploadFileList = new ArrayList<>();
-	// private List<BoardUpFilesVODTO> modifyFileList = new ArrayList<>(); // 수정요청시 유저가 업로드한 파일을 저장
 	private List<BoardUpFilesVODTO> modifyFileList = new ArrayList<>();
 	
 	
@@ -59,15 +59,29 @@ public class HBoardController {
 	private HBoardService service;
 	@Inject
 	private FileProcess fileProcess; // FileProcess 객체 주입
+	private int pagingSize = 10;
 
 	@RequestMapping("/listAll")
-	public void listAll(Model model) {
-		logger.info("HBoardController.listAll()........................");
-		
-		List<HBoardVO> list;
+	public void listAll(
+			Model model, 
+			@RequestParam(value="pageNo", defaultValue="1") int pageNo,
+			@RequestParam(value="pagingSize", required = false) Integer pagingSize
+			) {
+		logger.info(pageNo + "번 페이지 출력.......");
+		if (pagingSize == null) {
+			pagingSize = this.pagingSize; // url에 param이 안들어오면 그냥 저장된 클래스 변수 값 가져다 씀 
+		} else {
+			this.pagingSize = pagingSize; // 한번 param이 들어오면 클래스변수에 저장해둠
+		}
+		this.pagingSize = pagingSize; 
+		PagingInfoDTO dto = PagingInfoDTO.builder()
+							.pageNo(pageNo)
+							.pagingSize(pagingSize)
+							.build();
 		try {
-			list = service.getAllBoard();
-			model.addAttribute("boardList", list);
+			Map<String, Object> result = service.getAllBoard(dto);
+			model.addAttribute("boardList", result.get("boardList"));
+			model.addAttribute("pagingInfo", result.get("pagingInfo"));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -488,15 +502,47 @@ public class HBoardController {
 			);
 	}
 	
+	
 	@RequestMapping(value = "/modifyBoardSave", method = RequestMethod.POST)
-	public void modifyBoardSave(HBoardDTO modifyBoard,
-			@RequestParam("modifyNewFile") MultipartFile[] modifyNewFile) {
-		System.out.println(modifyBoard.toString() + "를 수정하자...");
+	public String modifyBoardSave ( 
+			HBoardDTO modifyBoard,
+			@RequestParam("modifynewFile") MultipartFile[] modifyNewFile,
+			HttpServletRequest request,
+			RedirectAttributes rttr
+			)
+	{
+		//=======================================================================
+		// NOTE : 
+		// modifyBoard 객체에는 title, content, writer 등 단순한 필드도 있지만
+		// List<BoardUpFilesVODTO> 타입의 fileList 객체도 있음.
+		// 그런데 이 fileList 객체는 깡통임. (jsp에서 객체를 전송하려면 복잡한 로직을 구현해야 함.)
+		// 이럴거면 HBoardDTO 타입으로 매개변수를 왜 받은거야???
+		// 근데 클래스 변수 modifyFileList에 BoardUpFilesVODTO 객체들이 담겨있으니까
+		// 이거 이용하면 되긴 함...
+		//=======================================================================
 		
-		for (int i = 0; i < modifyNewFile.length; i++) {
-			System.out.println(
-				"새로 업로드된 파일 : " + modifyNewFile[i].getOriginalFilename()
-			);
+		System.out.println(modifyBoard.toString() + "를 수정하자");
+		try {
+			for (int i = 0; i < modifyNewFile.length; i++) {
+				System.out.println("새로 업로드된 파일 : " + modifyNewFile[i].getOriginalFilename());
+				BoardUpFilesVODTO fileInfo = fileSave(modifyNewFile[i], request);
+				fileInfo.setFileStatus(BoardUpFileStatus.INSERT);
+				this.modifyFileList.add(fileInfo);
+				
+				// TODO : 파일 리스트 콘솔에 출력하는 메서드
+			}
+			
+			// DB에 저장
+			modifyBoard.setFileList(modifyFileList);
+			
+			if (service.modifyBoard(modifyBoard)) {
+				System.out.println("게시글 설정 완료");
+				rttr.addAttribute("status", "success");
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			rttr.addAttribute("status", "fail");
 		}
+		return "redirect:/hboard/viewBoard?boardNo=" + modifyBoard.getBoardNo();
 	}
 }

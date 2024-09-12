@@ -8,6 +8,7 @@ import com.miniproj.model.BoardUpFilesVODTO;
 import com.miniproj.model.HBoardDTO;
 import com.miniproj.model.HBoardReplyDTO;
 import com.miniproj.model.HBoardVO;
+import com.miniproj.model.PagingInfo;
 
 public interface HBoardDAO {
 	List<HBoardVO> selectAllBoard() throws Exception;
@@ -41,4 +42,15 @@ public interface HBoardDAO {
 	int deleteArticle(int boardNo);
 
 	BoardUpFilesVODTO selectUploadedFileInfo(int boardUpFileNo);
+
+	// 게시글 삭제
+	int updateBoardByBoardNo(HBoardDTO modifyBoard);
+
+	// 게시글 수정 -- 첨부파일 삭제
+	void deleteBoardUpFile(int boardUpFileNo);
+
+	int getTotalPostCnt();
+
+	// 게시글 목록 조회 -- 페이징
+	List<HBoardVO> selectAllBoard(PagingInfo pi);
 }
