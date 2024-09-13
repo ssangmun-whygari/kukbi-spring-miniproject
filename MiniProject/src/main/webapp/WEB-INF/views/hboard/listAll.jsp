@@ -14,6 +14,7 @@
 	$(function() {
 		showModal();
 		setViewUnit();
+		setSearchTypeAndSearchWord();
 		
 		// $(".modalCloseBtn").on()
 		
@@ -26,15 +27,28 @@
 		$("#viewUnitControl").on("change", function() {
 			location.href="/hboard/listAll/?pagingSize=" + $(this).val()
 		})
+
 	})
 	
 	// working...
 	function setViewUnit() {
-		$("#viewUnitControl")
-			.find(`option[value='${pagingInfo.getViewPostCntPerPage()}']`)
-			.prop("selected", true)
-	}
 		
+//		$("#viewUnitControl")
+//			.find(`option[value='${pagingInfo.getViewPostCntPerPage()}']`)
+//			.prop("selected", true)
+		// 위 코드보다 더 단순한 코드
+		$("#viewUnitControl").val(${pagingInfo.getViewPostCntPerPage()})
+		// 이것도 가능
+		//$("#viewUnitControl").val(${param.pagingSize})
+	}
+	// working...
+	function setSearchTypeAndSearchWord() {
+		
+		$("#searchWord").val('${search.searchWord}')
+		$("#searchType").val('${search.searchType}')
+	}
+	
+	
  	function showModal() {
 		let status = '${param.status}'; // url 주소창에서 status 쿼리스트링의 값을 가져와 변수 저장
 		console.log(status);
@@ -174,6 +188,38 @@ function goToArticle(boardNo) {
 			</select>
 		</div>
 		
+		<!-- 검색하는 form -->
+		<form action="/hboard/listAll" method="post">
+		<div class="row">
+		<div class="col-auto">
+			<select id="searchType" name="searchType">
+				<option value="">--검색타입--</option>
+				<option value="title">제목</option>
+				<option value="writer">작성자</option>
+				<option value="content">내용</option>
+			</select>
+		</div>
+		<div class="col-auto">
+			<input type="text" class="form-control" placeholder="검색어를 입력하세요..." id="searchWord" name="searchWord">
+		</div>
+		<div class="col-auto">
+			<button class="btn btn-success" type="submit">Go</button>
+		</div>
+		</div>
+		</form>
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
 		<h2>테이블이라네</h2>
 		<table class="table table-hover"><thead>
 		<tr>
@@ -221,7 +267,8 @@ function goToArticle(boardNo) {
 		<ul class="pagination">
 		<c:if test="${pagingInfo.getStartPageNoCurBlock() != 1}">
 		  <li class="page-item"><a class="page-link" 
-		  	href="/hboard/listAll?pageNo=${pagingInfo.getStartPageNoCurBlock()-1}"
+		  	href=
+		  		"/hboard/listAll?pageNo=${pagingInfo.getStartPageNoCurBlock()-1}"
 		  >이전</a></li>
 		</c:if>
  		  <c:forEach
@@ -235,7 +282,7 @@ function goToArticle(boardNo) {
 		  			active
 		  		</c:if>
 		  	"><a class="page-link" 
-		  		href="/hboard/listAll?pageNo=${status.index}"
+		  		href="/hboard/listAll?pageNo=${status.index}&searchType=${search.searchType}&searchWord=${search.searchWord}"
 		  	>${status.index }</a></li>
 		  </c:forEach>
 		<c:if test="${pagingInfo.getEndPageNoCurBlock() != pagingInfo.getTotalPageCnt()}">

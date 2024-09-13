@@ -31,6 +31,7 @@ import com.miniproj.model.HBoardReplyDTO;
 import com.miniproj.model.HBoardVO;
 import com.miniproj.model.MyResponseWithoutData;
 import com.miniproj.model.PagingInfoDTO;
+import com.miniproj.model.SearchCriteriaDTO;
 import com.miniproj.service.hboard.HBoardService;
 import com.miniproj.util.FileProcess;
 import com.miniproj.util.GetClientIPAddr;
@@ -65,9 +66,11 @@ public class HBoardController {
 	public void listAll(
 			Model model, 
 			@RequestParam(value="pageNo", defaultValue="1") int pageNo,
-			@RequestParam(value="pagingSize", required = false) Integer pagingSize
+			@RequestParam(value="pagingSize", required = false) Integer pagingSize,
+			SearchCriteriaDTO searchCriteriaDTO // POST에서 searchType와 searchWord가 body에 담겨서 전송되는데 searchCriteriaDTO의 필드하고 이름이 같아서 자동으로 매칭됨
 			) {
 		logger.info(pageNo + "번 페이지 출력.......");
+		logger.info(searchCriteriaDTO.toString());
 		if (pagingSize == null) {
 			pagingSize = this.pagingSize; // url에 param이 안들어오면 그냥 저장된 클래스 변수 값 가져다 씀 
 		} else {
@@ -79,9 +82,11 @@ public class HBoardController {
 							.pagingSize(pagingSize)
 							.build();
 		try {
-			Map<String, Object> result = service.getAllBoard(dto);
-			model.addAttribute("boardList", result.get("boardList"));
-			model.addAttribute("pagingInfo", result.get("pagingInfo"));
+			// working....
+			Map<String, Object> resultMap = service.getAllBoardBySearchword(dto, searchCriteriaDTO);
+			model.addAttribute("pagingInfo", resultMap.get("pagingInfo"));
+			model.addAttribute("boardList", resultMap.get("boardList"));
+			model.addAttribute("search", searchCriteriaDTO);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

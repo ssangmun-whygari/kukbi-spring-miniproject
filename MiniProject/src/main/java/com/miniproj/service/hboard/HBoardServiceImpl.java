@@ -20,6 +20,7 @@ import com.miniproj.model.HBoardVO;
 import com.miniproj.model.PagingInfo;
 import com.miniproj.model.PagingInfoDTO;
 import com.miniproj.model.PointLogDTO;
+import com.miniproj.model.SearchCriteriaDTO;
 import com.miniproj.persistence.HBoardDAO;
 import com.miniproj.persistence.MemberDAO;
 import com.miniproj.persistence.PointLogDAO;
@@ -259,4 +260,42 @@ public class HBoardServiceImpl implements HBoardService {
 		return pi;
 	}
 
+	// working... 수정 필요
+	@Override
+	public List<HBoardVO> getAllBoard(
+			PagingInfoDTO dto, 
+			SearchCriteriaDTO searchCriteriaDTO) {
+		return bDao.selectAllBoard(searchCriteriaDTO);
+	}
+	
+	// makePagingInfo의 오버로드
+	private PagingInfo makePagingInfo(PagingInfoDTO dto, SearchCriteriaDTO sc) {
+		PagingInfo pi = new PagingInfo(dto);
+		
+		// setter 호출
+		// working... 계산식 수정 필요
+		
+		pi.setTotalPostCnt(bDao.getTotalPostCntWithSearchWord(sc)); // 이럼 totalPostCnt가 설정됨
+		System.out.println("총 글의 갯수 : " + pi.getTotalPostCnt());
+		
+		pi.setTotalPageCnt(); // totalPostCnt와 viewPostCntPerPage로 계산함
+		pi.setStartRowIndex(); // pageNo와 viewPostCntPerPage로 설정함
+		
+		// 페이징 블럭
+		pi.setPageBlockNoCurPage();
+		pi.setStartPageNoCurBlock();
+		pi.setEndPageNoCurBlock();
+		
+		System.out.println("pagingInfo : " + pi.toString());
+		
+		return pi;
+	}
+
+	@Override
+	public Map<String, Object> getAllBoardBySearchword(
+			PagingInfoDTO dto,
+			SearchCriteriaDTO searchCriteriaDTO) {
+		PagingInfo pi = makePagingInfo(dto, searchCriteriaDTO);
+		return bDao.selectAllBoard(pi, searchCriteriaDTO);
+	}
 }

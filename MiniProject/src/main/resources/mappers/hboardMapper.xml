@@ -160,4 +160,37 @@
 	<select id="selectTotalCount" resultType="int">
 		select count(*) from board
 	</select>
+	
+	<!-- 게시판 검색 -->
+	<select id="getArticlesBySearchWord" resultType="com.miniproj.model.HBoardVO">
+		select * from board where isDeleted = 'N'
+		<choose>
+			<when test="searchType == 'title'">
+				and title like concat('%', #{searchWord}, '%')
+			</when>
+			<when test="searchType == 'writer'">
+				and writer like concat('%', #{searchWord}, '%')
+			</when>
+			<when test="searchType == 'content'">
+				and content like concat('%', #{searchWord}, '%')
+			</when>
+		</choose>
+		order by ref desc, refOrder asc limit #{startRowIndex}, #{viewPostCntPerPage}
+	</select>
+	
+	<select id="selectTotalCountWithSearchCriteria" resultType="int">
+		select count(*) from board where isDeleted = 'N'
+		<choose>
+			<when test="searchType == 'title'">
+				and title like concat('%', #{searchWord}, '%')
+			</when>
+			<when test="searchType == 'writer'">
+				and writer like concat('%', #{searchWord}, '%')
+			</when>
+			<when test="searchType == 'content'">
+				and content like concat('%', #{searchWord}, '%')
+			</when>
+		</choose>
+		order by ref desc, refOrder asc
+	</select>
 </mapper>

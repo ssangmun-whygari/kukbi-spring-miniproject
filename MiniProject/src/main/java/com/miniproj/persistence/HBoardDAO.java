@@ -9,6 +9,7 @@ import com.miniproj.model.HBoardDTO;
 import com.miniproj.model.HBoardReplyDTO;
 import com.miniproj.model.HBoardVO;
 import com.miniproj.model.PagingInfo;
+import com.miniproj.model.SearchCriteriaDTO;
 
 public interface HBoardDAO {
 	List<HBoardVO> selectAllBoard() throws Exception;
@@ -53,4 +54,10 @@ public interface HBoardDAO {
 
 	// 게시글 목록 조회 -- 페이징
 	List<HBoardVO> selectAllBoard(PagingInfo pi);
+
+	List<HBoardVO> selectAllBoard(SearchCriteriaDTO searchCriteriaDTO);
+
+	int getTotalPostCntWithSearchWord(SearchCriteriaDTO sc);
+
+	Map<String, Object> selectAllBoard(PagingInfo pi, SearchCriteriaDTO searchCriteriaDTO);
 }

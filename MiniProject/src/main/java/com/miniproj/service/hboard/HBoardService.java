@@ -8,7 +8,9 @@ import com.miniproj.model.BoardUpFilesVODTO;
 import com.miniproj.model.HBoardDTO;
 import com.miniproj.model.HBoardReplyDTO;
 import com.miniproj.model.HBoardVO;
+import com.miniproj.model.PagingInfo;
 import com.miniproj.model.PagingInfoDTO;
+import com.miniproj.model.SearchCriteriaDTO;
 
 public interface HBoardService {
 	
@@ -33,4 +35,10 @@ public interface HBoardService {
 
 	//게시글 조회 -- 페이징
 	Map<String, Object> getAllBoard(PagingInfoDTO dto);
+
+	// 게시글 조회 -- 검색
+	List<HBoardVO> getAllBoard(PagingInfoDTO dto, SearchCriteriaDTO searchCriteriaDTO);
+
+	Map<String, Object> getAllBoardBySearchword(PagingInfoDTO dto, SearchCriteriaDTO searchCriteriaDTO);
+	
 }

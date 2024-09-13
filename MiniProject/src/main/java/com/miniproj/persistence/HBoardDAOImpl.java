@@ -15,6 +15,7 @@ import com.miniproj.model.HBoardDTO;
 import com.miniproj.model.HBoardReplyDTO;
 import com.miniproj.model.HBoardVO;
 import com.miniproj.model.PagingInfo;
+import com.miniproj.model.SearchCriteriaDTO;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -160,4 +161,28 @@ public class HBoardDAOImpl implements HBoardDAO {
 		return ses.selectList(ns + "getAllBoard", pi);
 	}
 
+	@Override
+	public List<HBoardVO> selectAllBoard(SearchCriteriaDTO searchCriteriaDTO) {
+		return ses.selectList(ns + "getArticlesBySearchWord", searchCriteriaDTO);
+	}
+	
+	@Override
+	public int getTotalPostCntWithSearchWord(SearchCriteriaDTO sc) {
+		return ses.selectOne(ns + "selectTotalCountWithSearchCriteria", sc);
+	}
+
+	@Override
+	public Map<String, Object> selectAllBoard(PagingInfo pi, SearchCriteriaDTO searchCriteriaDTO) {
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("startRowIndex", pi.getStartRowIndex());
+		params.put("viewPostCntPerPage", pi.getViewPostCntPerPage());
+		params.put("searchType", searchCriteriaDTO.getSearchType());
+		params.put("searchWord", searchCriteriaDTO.getSearchWord());
+		
+		Map<String, Object> resultMap = new HashMap<String, Object>();
+		// ?? Note :  어차피 똑같이 pagingInfo면 왜 다시 반환하는거야?
+		resultMap.put("pagingInfo", pi);
+		resultMap.put("boardList", ses.selectList(ns + "getArticlesBySearchWord", params));
+		return resultMap;
+	}
 }
