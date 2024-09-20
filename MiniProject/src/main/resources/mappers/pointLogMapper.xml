@@ -14,11 +14,22 @@
 		)
 	</insert>
 	
-<!-- 	<insert id="insertPointlog">
+<!--<insert id="insertPointlog">
 		insert into pointlog (pointWho, pointWhy, pointScore) values (
 			#{pointWho},
 			#{pointWhy},
 			10
 		);
-	</insert> -->
+	</insert>-->
+	
+	<insert id="insertPointLogSelectKey">
+		<selectKey keyProperty="pointScore" resultType="int" order="BEFORE">
+			select pointScore from pointdef where pointWhy = #{pointWhy} 
+		</selectKey>
+		insert into pointlog (pointWho, pointWhy, pointScore) values (
+			#{pointWho},
+			#{pointWhy},
+			#{pointScore}
+		)
+	</insert>
 </mapper>

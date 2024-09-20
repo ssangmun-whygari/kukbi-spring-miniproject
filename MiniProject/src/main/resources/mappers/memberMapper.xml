@@ -12,4 +12,29 @@
 		set userPoint = userPoint + (select pointScore from pointdef where pointWhy = '글작성')
 		where userId = #{userId};
 	</update>
+	
+	<select id="selectUserId" resultType="int">
+		select count(*) from member where userId=#{tmpUserId}
+	</select>
+	
+	<insert id="insertMember">
+		insert into member
+		<if test="userImg != null">
+		(userId, userPwd, userName, gender, mobile, email, hobby, userImg
+		) values (
+			#{userId}, 
+			sha1(md5(#{userPwd})), 
+			#{userName}, 
+			#{gender}, 
+			#{mobile}, 
+			#{email}, 
+			#{hobby}, 
+			#{userImg}
+			);
+		</if>
+		<if test="userImg == null">
+			userId, userPwd, userName, gender, mobile, email, hobby, userImg
+) values (?, sha1(md5(?)), ?, ?, ?, ?, ?, ?);
+		</if>
+	</insert>
 </mapper>

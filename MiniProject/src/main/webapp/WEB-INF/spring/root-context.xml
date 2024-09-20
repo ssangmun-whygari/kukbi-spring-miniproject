@@ -65,6 +65,7 @@
 	<!-- 아래의 패키지를 조사(scan)하여 필요한 객체를 만들고, 스프링컨테이너에 의해 관리되도록 한다. -->
 	<context:component-scan base-package="com.miniproj.persistence"></context:component-scan>
 	<context:component-scan base-package="com.miniproj.service.hboard"></context:component-scan>
+	<context:component-scan base-package="com.miniproj.service.member"></context:component-scan>
 	<context:component-scan base-package="com.miniproj.util"></context:component-scan>
 	
 

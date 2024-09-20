@@ -34,7 +34,7 @@
         <a class="nav-link" href="/hboard/listAll">계층형게시판</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="#">Link</a>
+        <a class="nav-link" href="/member/register">회원가입</a>
       </li>
       <li class="nav-item">
         <a class="nav-link disabled" href="#">Disabled</a>

@@ -240,4 +240,11 @@ public class FileProcess {
 		System.out.println("파일 삭제됨? : " + String.valueOf(result));
 		return result;
 	}
+
+	public void saveUserProfile(byte[] upfile, String realPath, String fileName) throws IOException {
+		// 회원가입시 업로드된 유저 프로필 이미지를 저장하는 메서드
+		File saveFile = new File(
+			realPath + File.separator + fileName);
+		FileUtils.writeByteArrayToFile(saveFile, upfile);
+	}
 }
